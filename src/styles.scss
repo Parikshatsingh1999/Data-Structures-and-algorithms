@@ -1,0 +1,80 @@
+body {
+  // background: green;
+  text-align: center;
+  font-size: 28px;
+
+  input {
+    width: 200px;
+    height: 30px;
+    font-size: 22px;
+  }
+
+  h3 {
+    color: pink;
+  }
+  .circle {
+    width: 300px;
+    height: 300px;
+    margin: auto;
+    background: conic-gradient(
+      red 0.25turn,
+      blue 0.25turn 0.6turn,
+      black 0.6turn
+    );
+    border-radius: 50%;
+  }
+
+  ul {
+    counter-reset: list-count;
+  }
+  li::before {
+    content: counters(list-count, ".") " ";
+    counter-increment: list-count;
+  }
+}
+
+div {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+}
+
+.z1 {
+  z-index: 1;
+}
+.z2 {
+  z-index: 2;
+}
+.z3 {
+  z-index: 3;
+}
+.z4 {
+  z-index: 4;
+}
+.z5 {
+  z-index: 5;
+}
+
+div[name="A"] {
+  background-color: green;
+}
+div[name="B"] {
+  background-color: RED;
+}
+div[name="C"] {
+  background-color: pink;
+}
+div[name="D"] {
+  background-color: darkblue;
+}
+div[name="E"] {
+  background-color: greenyellow;
+}
+div[name="F"] {
+  background-color: fuchsia;
+}
+div[name="G"] {
+  background-color: grey;
+}

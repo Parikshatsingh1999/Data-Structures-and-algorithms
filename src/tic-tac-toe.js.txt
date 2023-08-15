@@ -1,0 +1,245 @@
+import React, { useState , createContext , useContext } from 'react';
+import { createRoot } from 'react-dom/client';
+
+const rowStyle = {
+  display: 'flex'
+}
+
+const GameContext = createContext();
+
+
+
+const squareStyle = {
+  'width':'60px',
+  'height':'60px',
+  'backgroundColor': '#ddd',
+  'margin': '4px',
+  'display': 'flex',
+  'justifyContent': 'center',
+  'alignItems': 'center',
+  'fontSize': '20px',
+  'color': 'black'
+}
+
+const boardStyle = {
+  'backgroundColor': '#eee',
+  'width': '208px',
+  'alignItems': 'center',
+  'justifyContent': 'center',
+  'display': 'flex',
+  'flexDirection': 'column',
+  'border': '3px #eee solid'
+}
+
+const containerStyle = {
+  'display': 'flex',
+  'alignItems': 'center',
+  'flexDirection': 'column'
+}
+
+const instructionsStyle = {
+  'marginTop': '5px',
+  'marginBottom': '5px',
+  'fontWeight': 'bold',
+  'fontSize': '16px',
+}
+
+const buttonStyle = {
+  'marginTop': '15px',
+  'marginBottom': '16px',
+  'width': '80px',
+  'height': '40px',
+  'backgroundColor': '#8acaca',
+  'color': 'white',
+  'fontSize': '16px',
+}
+
+function Square({position:[x,y]}) {
+const {moveMade ,board } = useContext(GameContext);
+
+const sqClick = ()=>{
+  if(board[x][y]==0){
+  moveMade(x,y)
+  }
+}
+
+  return (
+    <div onClick={ sqClick}
+      className="square"
+      style={squareStyle}>
+      {
+      !!board[x][y] && <p> { board[x][y] } </p>
+      }
+    </div>
+  );
+}
+
+function Board() {
+
+const {reset , winner , turn , gameOver} = useContext(GameContext);
+
+  return (
+    <div style={containerStyle} className="gameBoard">
+      <div id="statusArea" className="status" style={instructionsStyle}>Next player: <span>{turn}</span></div>
+      <div id="winnerArea" className="winner" style={instructionsStyle}>Winner: <span>{gameOver ? "Draw" : (winner || "None")}</span></div>
+      {(!!winner || !!gameOver) && <p> Game over </p>}
+      <button style={buttonStyle} onClick={reset}>Reset</button>
+      <div style={boardStyle}>
+        <div className="board-row" style={rowStyle}>
+          <Square position={[0,0]}/>
+          <Square position={[0,1]}/>
+          <Square position={[0,2]}/>
+        </div>
+        <div className="board-row" style={rowStyle}>
+          <Square position={[1,0]}/>
+          <Square position={[1,1]}/>
+          <Square position={[1,2]}/>
+        </div>
+        <div className="board-row" style={rowStyle}>
+          <Square position={[2,0]}/>
+          <Square position={[2,1]}/>
+          <Square position={[2,2]}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const mainBoard = [ [0,0,0] , [0,0,0] , [0,0,0] ]
+
+function Game() {
+
+const [players] = useState(["X","O"]);
+
+const [winner,setWinner] = useState(0);
+
+const [gameOver,setGameOver] = useState(false);
+
+const [turn,setTurn] = useState(players[0]);
+
+const [board,setBoard] = useState(JSON.parse(JSON.stringify(mainBoard)));
+
+const hasSpace = (newBoard) => {
+  let hasBlank = false;
+  for(let x=0;x<3;x++){
+    hasBlank = newBoard[x].some(item => !item);
+    if(hasBlank) break;
+  }
+  return hasBlank;
+}
+
+const isWinner = (newBoard) => {
+
+// horizontalCheck 
+  for(let x=0 ; x<3 ; x++){
+    if(!newBoard[x][0]){
+    break;
+    } 
+    let allSame = newBoard[x].every(ind => !!ind && ind == newBoard[x][0] )
+    if(allSame){  
+    setWinner(turn); 
+    return;
+    }
+  }
+
+// vertical 
+
+  for(let y=0;y<3;y++){
+      if(!newBoard[0][y]){
+      break;
+      }
+      let value = newBoard[0][y];
+      let allSame = true;
+      for(let x=1;x<3;x++){
+        if(value!=newBoard[x][y]){
+        allSame = false
+        break;
+        }
+      }
+      if(allSame){  
+      setWinner(turn); 
+      return;
+    }
+  }
+
+  // horizontal left
+  let value = newBoard[0][0]
+  let allSame = true;
+
+  for(let x=1;x<3;x++){
+    if(value !=newBoard[x][x]){
+    allSame = false;
+    break;
+    }
+  }
+  if(allSame){  
+    setWinner(turn); 
+    return;
+  }
+
+  // horizontal right
+  value = newBoard[0,2];
+  allSame = true;
+
+  for(let x=1,y=1;x<3,y>=0;x++,y--){
+    if(value !=newBoard[x][y]){
+    allSame = false;
+    break;
+    }
+  }
+  if(allSame){  
+    setWinner(turn); 
+    return;
+  }
+
+ 
+  if(!hasSpace(newBoard)){
+  setGameOver(true)
+  }
+
+}
+
+const reset = ()=>{
+  setTurn(prev => players[0])
+  setWinner(prev => false);
+  setGameOver(prev => false )
+  setBoard(prev => JSON.parse(JSON.stringify(mainBoard)) )
+};
+
+const moveMade = (x,y)=>{
+  if(!!winner || !!gameOver){
+    return
+  }
+  setBoard(prev=>{
+    let newBoard = prev; 
+    newBoard[x][y] = turn;
+    isWinner(newBoard);
+    return newBoard;
+  })
+  setTurn(prev => prev=="X" ? "O":"X");
+}
+
+const contextValues = {
+  winner,
+  turn,
+  reset,
+  moveMade,
+  board,
+  gameOver
+};
+
+
+  return (
+  <GameContext.Provider value={contextValues}>
+    <div className="game">
+      <div className="game-board">
+        <Board />
+      </div>
+    </div>
+  </GameContext.Provider>
+  );
+}
+
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<Game />);
